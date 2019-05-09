@@ -1,6 +1,20 @@
 import numpy as np
 import pandas as pd
 import nibabel as ni
+from scipy.sparse import csr_matrix
+
+def load_sparse_csr(filename):
+    '''
+    Returns scipy.sparse_csr data in numpy.matrix format.
+    
+    Parameters
+    ----------
+    filename : str
+       filename of data in scipy.sparse.csr_matrix format (i.e. *.npz)
+    '''
+    loader = np.load(filename)
+    mat = csr_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])
+    return mat.todense()
 
 def get_imap_fdg_data(subject, voxel_mask):
     '''
