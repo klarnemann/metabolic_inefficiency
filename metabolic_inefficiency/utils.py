@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+import nibabel as ni
 
 def standardize_data(data):
     '''Returns Z-scored data.'''
@@ -7,6 +9,31 @@ def standardize_data(data):
 def normalize_data(data):
     '''Returns normalized data (i.e. sets range of data from 0 to 1).'''
     return ((data - np.min(data)) /  (np.max(data) - np.min(data)))
+
+def make_adjacency_matrix_from_timeseries(ts_f, voxel_mask_f, fill_diagonal=True, upper_triangle=True):
+    '''Compute adjacency matrix from 4D timeseries.
+    
+    ts_f : str
+        Filename of 4D nifti timeseries data.
+    voxel_mask_f : str
+        Filename of 3D nifti voxel mask.
+    fill_diagonal : bool
+        Optional:  Set diagonal to zero.
+    upper_triangle : bool
+        Optional: Set lower triangle to zero.
+    
+    Returns
+    -------
+    mat : array-like, shape=(voxel,voxel) or (ROI, ROI)'''
+    ts = ni.load(ts_f).get_data()# load 4D timeseries
+    voxel_mask = ni.load(voxel_mask_f).get_data()# load voxel_mask
+    ts_df = pd.DataFrame(ts[mask > 0])# select voxels, format as DataFrame
+    mat = np.array(ts_df.T.corr())# pairwise pearson's r
+    if fill_diagonal:
+        np.fill_diagonal(mat, 0.)# set diagonal to zero
+    if upper_triangle:
+        mat = np.triu(mat)
+    return mat
 
 def threshold_adjmat_by_cost(mat, cost):
     n_nodes, _ = mat.shape
