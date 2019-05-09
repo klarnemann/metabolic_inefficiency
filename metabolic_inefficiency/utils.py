@@ -8,6 +8,15 @@ def normalize_data(data):
     '''Returns normalized data (i.e. sets range of data from 0 to 1).'''
     return ((data - np.min(data)) /  (np.max(data) - np.min(data)))
 
+def threshold_adjmat_by_cost(mat, cost):
+    n_nodes, _ = mat.shape
+    mat[np.isnan(mat)] = 0.
+    dat = mat[np.triu_indices(n_nodes, 1)]
+    pctl = int((1. - (cost/2.))*100)
+    thr = np.percentile(dat, pctl)
+    bmat = np.array(mat >= thr, dtype=bool)
+    return bmat
+
 def non_neighbor_mask(voxel, voxel_mask=voxel_mask, n_voxels=n_voxels):
     '''Select all non-neighboring voxels.
     
